@@ -53,7 +53,7 @@ public class UserOrderForm {
     private String washingMachine;
 
     @NotNull
-    private boolean washingMachineInstallation;
+    private boolean washingMachineInstallation = false;
 
     public String getCustomerName() {
         return customerName;
