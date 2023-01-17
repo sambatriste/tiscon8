@@ -14,46 +14,46 @@ import javax.validation.constraints.NotNull;
 public class UserOrderForm {
 
     @NotBlank
-    private String customerName;
+    private String customerName = "";
 
     @NotBlank
     @Numeric
-    private String tel;
+    private String tel = "";
 
     @Email
     @NotBlank
-    private String email;
+    private String email = "";
 
     @NotBlank
-    private String oldPrefectureId;
+    private String oldPrefectureId = "";
 
     @NotBlank
-    private String oldAddress;
+    private String oldAddress = "";
 
     @NotBlank
-    private String newPrefectureId;
+    private String newPrefectureId = "";
 
     @NotBlank
-    private String newAddress;
-
-    @Numeric
-    @NotBlank
-    private String box;
+    private String newAddress = "";
 
     @Numeric
     @NotBlank
-    private String bed;
+    private String box = "";
 
     @Numeric
     @NotBlank
-    private String bicycle;
+    private String bed = "";
 
     @Numeric
     @NotBlank
-    private String washingMachine;
+    private String bicycle = "";
+
+    @Numeric
+    @NotBlank
+    private String washingMachine = "";
 
     @NotNull
-    private boolean washingMachineInstallation;
+    private boolean washingMachineInstallation = false;
 
     public String getCustomerName() {
         return customerName;
