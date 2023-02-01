@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 /**
@@ -47,10 +48,8 @@ public class EstimateController {
      */
     @GetMapping("input")
     String input(Model model) {
-        if (!model.containsAttribute("userOrderForm")) {
-            model.addAttribute("userOrderForm", new UserOrderForm());
-        }
 
+        model.addAttribute("userOrderForm", emptyForm());
         model.addAttribute("prefectures", estimateService.getPrefectures());
         return "input";
     }
@@ -63,12 +62,12 @@ public class EstimateController {
      * @return 遷移先
      */
     @PostMapping(value = "submit", params = "confirm")
-    String confirm(UserOrderForm userOrderForm, Model model) {
+    String confirm(@ModelAttribute UserOrderForm userOrderForm, Model model) {
         Prefectures prefectures = estimateService.getPrefectures();
         model.addAttribute("prefectures", estimateService.getPrefectures());
         model.addAttribute("userOrderForm", userOrderForm);
-        model.addAttribute("oldPrefectureName", prefectures.findPrefectureName(userOrderForm.getOldPrefectureId()));
-        model.addAttribute("newPrefectureName", prefectures.findPrefectureName(userOrderForm.getNewPrefectureId()));
+        model.addAttribute("oldPrefectureName", prefectures.findPrefectureName(userOrderForm.oldPrefectureId()));
+        model.addAttribute("newPrefectureName", prefectures.findPrefectureName(userOrderForm.newPrefectureId()));
 
         return "confirm";
     }
@@ -115,8 +114,8 @@ public class EstimateController {
         Prefectures prefectures = estimateService.getPrefectures();
         model.addAttribute("prefectures", prefectures);
         model.addAttribute("userOrderForm", userOrderForm);
-        model.addAttribute("oldPrefectureName", prefectures.findPrefectureName(userOrderForm.getOldPrefectureId()));
-        model.addAttribute("newPrefectureName", prefectures.findPrefectureName(userOrderForm.getNewPrefectureId()));
+        model.addAttribute("oldPrefectureName", prefectures.findPrefectureName(userOrderForm.oldPrefectureId()));
+        model.addAttribute("newPrefectureName", prefectures.findPrefectureName(userOrderForm.newPrefectureId()));
 
         if (result.hasErrors()) {
             model.addAttribute("errors", result.getAllErrors());
@@ -124,8 +123,8 @@ public class EstimateController {
         }
 
         // 料金の計算を行う。
-        UserOrderDto dto = new UserOrderDto();
-        BeanUtils.copyProperties(userOrderForm, dto);
+        UserOrderDto dto = userOrderForm.toUserOrderDto();
+
         Integer price = estimateService.getPrice(dto);
 
         model.addAttribute("price", price);
@@ -148,12 +147,14 @@ public class EstimateController {
             return "confirm";
         }
 
-        UserOrderDto dto = new UserOrderDto();
-        BeanUtils.copyProperties(userOrderForm, dto);
+        UserOrderDto dto = userOrderForm.toUserOrderDto();
         estimateService.registerOrder(dto);
 
         return "complete";
     }
 
 
+    private static UserOrderForm emptyForm() {
+        return new UserOrderForm("","", "", "", "", "", "", "", "", "","", false);
+    }
 }

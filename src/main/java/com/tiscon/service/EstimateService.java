@@ -45,11 +45,11 @@ public class EstimateService {
      */
     @Transactional
     public void registerOrder(UserOrderDto dto) {
-        Customer customer = new Customer();
-        BeanUtils.copyProperties(dto, customer);
-        estimateDAO.insertCustomer(customer);
+        Customer customer = dto.toCustomer();
 
-        if (dto.getWashingMachineInstallation()) {
+        int customerId = estimateDAO.insertCustomer(customer);
+
+        if (dto.washingMachineInstallation()) {
             CustomerOptionService washingMachine = new CustomerOptionService();
             washingMachine.setCustomerId(customer.getCustomerId());
             washingMachine.setServiceId(OptionalServiceType.WASHING_MACHINE.getCode());
@@ -58,10 +58,10 @@ public class EstimateService {
 
         List<CustomerPackage> packageList = new ArrayList<>();
 
-        packageList.add(new CustomerPackage(customer.getCustomerId(), PackageType.BOX.getCode(), dto.getBox()));
-        packageList.add(new CustomerPackage(customer.getCustomerId(), PackageType.BED.getCode(), dto.getBed()));
-        packageList.add(new CustomerPackage(customer.getCustomerId(), PackageType.BICYCLE.getCode(), dto.getBicycle()));
-        packageList.add(new CustomerPackage(customer.getCustomerId(), PackageType.WASHING_MACHINE.getCode(), dto.getWashingMachine()));
+        packageList.add(new CustomerPackage(customerId, PackageType.BOX.getCode(), dto.box()));
+        packageList.add(new CustomerPackage(customerId, PackageType.BED.getCode(), dto.bed()));
+        packageList.add(new CustomerPackage(customerId, PackageType.BICYCLE.getCode(), dto.bicycle()));
+        packageList.add(new CustomerPackage(customerId, PackageType.WASHING_MACHINE.getCode(), dto.washingMachine()));
         estimateDAO.batchInsertCustomerPackage(packageList);
     }
 
@@ -72,17 +72,17 @@ public class EstimateService {
      * @return 概算見積もり結果の料金
      */
     public Integer getPrice(UserOrderDto dto) {
-        double distance = estimateDAO.getDistance(dto.getOldPrefectureId(), dto.getNewPrefectureId());
+        double distance = estimateDAO.getDistance(dto.oldPrefectureId(), dto.newPrefectureId());
         // 小数点以下を切り捨てる
         int distanceInt = (int) Math.floor(distance);
 
         // 距離当たりの料金を算出する
         int priceForDistance = distanceInt * PRICE_PER_DISTANCE;
 
-        int boxes = getBoxForPackage(dto.getBox(), PackageType.BOX)
-                + getBoxForPackage(dto.getBed(), PackageType.BED)
-                + getBoxForPackage(dto.getBicycle(), PackageType.BICYCLE)
-                + getBoxForPackage(dto.getWashingMachine(), PackageType.WASHING_MACHINE);
+        int boxes = getBoxForPackage(dto.box(), PackageType.BOX)
+                + getBoxForPackage(dto.bed(), PackageType.BED)
+                + getBoxForPackage(dto.bicycle(), PackageType.BICYCLE)
+                + getBoxForPackage(dto.washingMachine(), PackageType.WASHING_MACHINE);
 
         // 箱に応じてトラックの種類が変わり、それに応じて料金が変わるためトラック料金を算出する。
         int pricePerTruck = estimateDAO.getPricePerTruck(boxes);
@@ -90,7 +90,7 @@ public class EstimateService {
         // オプションサービスの料金を算出する。
         int priceForOptionalService = 0;
 
-        if (dto.getWashingMachineInstallation()) {
+        if (dto.washingMachineInstallation()) {
             priceForOptionalService = estimateDAO.getPricePerOptionalService(OptionalServiceType.WASHING_MACHINE.getCode());
         }
 
