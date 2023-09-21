@@ -8,7 +8,7 @@ body {
 
 .jumbotron {
     height: 40vh;
-    background-image: url("../img/top.webp");
+    background-image: url("/img/top.webp");
     background-position:left 0 top 80%;
     background-size: cover;
     background-repeat: no-repeat;
@@ -158,9 +158,6 @@ ul.label {
     font: "Roboto";
 }
 
-.form-control {
-    height: 2.8rem
-}
 
 th {
     font-style: normal;
@@ -306,4 +303,24 @@ td {
     padding: 1em;
     border-radius: .28571429rem;
     border: 1px solid rgba(34,36,38,.15);
+}
+
+label {
+    width: 100%;
+}
+
+.form-group input, select {
+    display: block;
+    width: 100%;
+    height: 2.8rem;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }

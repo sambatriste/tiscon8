@@ -1,6 +1,7 @@
 package com.tiscon.controller;
 
 import com.tiscon.dao.EstimateDao;
+import com.tiscon.domain.Prefectures;
 import com.tiscon.dto.UserOrderDto;
 import com.tiscon.form.UserOrderForm;
 import com.tiscon.service.EstimateService;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class EstimateController {
 
-    private final EstimateDao estimateDAO;
 
     private final EstimateService estimateService;
 
@@ -31,7 +31,6 @@ public class EstimateController {
      * @param estimateService EstimateServiceクラス
      */
     public EstimateController(EstimateDao estimateDAO, EstimateService estimateService) {
-        this.estimateDAO = estimateDAO;
         this.estimateService = estimateService;
     }
 
@@ -52,19 +51,8 @@ public class EstimateController {
             model.addAttribute("userOrderForm", new UserOrderForm());
         }
 
-        model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
+        model.addAttribute("prefectures", estimateService.getPrefectures());
         return "input";
-    }
-
-    /**
-     * TOP画面に戻る。
-     *
-     * @param model 遷移先に連携するデータ
-     * @return 遷移先
-     */
-    @PostMapping(value = "submit", params = "backToTop")
-    String backToTop(Model model) {
-        return "top";
     }
 
     /**
@@ -76,9 +64,12 @@ public class EstimateController {
      */
     @PostMapping(value = "submit", params = "confirm")
     String confirm(UserOrderForm userOrderForm, Model model) {
-
-        model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
+        Prefectures prefectures = estimateService.getPrefectures();
+        model.addAttribute("prefectures", estimateService.getPrefectures());
         model.addAttribute("userOrderForm", userOrderForm);
+        model.addAttribute("oldPrefectureName", prefectures.findPrefectureName(userOrderForm.getOldPrefectureId()));
+        model.addAttribute("newPrefectureName", prefectures.findPrefectureName(userOrderForm.getNewPrefectureId()));
+
         return "confirm";
     }
 
@@ -91,7 +82,7 @@ public class EstimateController {
      */
     @PostMapping(value = "result", params = "backToInput")
     String backToInput(UserOrderForm userOrderForm, Model model) {
-        model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
+        model.addAttribute("prefectures", estimateService.getPrefectures());
         model.addAttribute("userOrderForm", userOrderForm);
         return "input";
     }
@@ -105,7 +96,7 @@ public class EstimateController {
      */
     @PostMapping(value = "order", params = "backToConfirm")
     String backToConfirm(UserOrderForm userOrderForm, Model model) {
-        model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
+        model.addAttribute("prefectures", estimateService.getPrefectures());
         model.addAttribute("userOrderForm", userOrderForm);
         return "confirm";
     }
@@ -120,10 +111,15 @@ public class EstimateController {
      */
     @PostMapping(value = "result", params = "calculation")
     String calculation(@Validated UserOrderForm userOrderForm, BindingResult result, Model model) {
-        if (result.hasErrors()) {
 
-            model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
-            model.addAttribute("userOrderForm", userOrderForm);
+        Prefectures prefectures = estimateService.getPrefectures();
+        model.addAttribute("prefectures", prefectures);
+        model.addAttribute("userOrderForm", userOrderForm);
+        model.addAttribute("oldPrefectureName", prefectures.findPrefectureName(userOrderForm.getOldPrefectureId()));
+        model.addAttribute("newPrefectureName", prefectures.findPrefectureName(userOrderForm.getNewPrefectureId()));
+
+        if (result.hasErrors()) {
+            model.addAttribute("errors", result.getAllErrors());
             return "confirm";
         }
 
@@ -132,8 +128,6 @@ public class EstimateController {
         BeanUtils.copyProperties(userOrderForm, dto);
         Integer price = estimateService.getPrice(dto);
 
-        model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
-        model.addAttribute("userOrderForm", userOrderForm);
         model.addAttribute("price", price);
         return "result";
     }
@@ -149,8 +143,7 @@ public class EstimateController {
     @PostMapping(value = "order", params = "complete")
     String complete(@Validated UserOrderForm userOrderForm, BindingResult result, Model model) {
         if (result.hasErrors()) {
-
-            model.addAttribute("prefectures", estimateDAO.getAllPrefectures());
+            model.addAttribute("prefectures", estimateService.getPrefectures());
             model.addAttribute("userOrderForm", userOrderForm);
             return "confirm";
         }
@@ -161,5 +154,6 @@ public class EstimateController {
 
         return "complete";
     }
+
 
 }
